@@ -38,7 +38,7 @@ export default [
   {
     id: 5,
     categoryId: 1,
-    colorId: [5, 6 , 1],
+    colorId: [5, 6, 1],
     title: 'iPhone 13 Pro Max',
     price: 200000,
     image: '/img/iphone13.jpg',

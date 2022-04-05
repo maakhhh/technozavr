@@ -1,7 +1,7 @@
 <template>
 <!-- eslint-disable max-len -->
   <li class="catalog__item">
-    <a class="catalog__pic" href="#">
+    <a class="catalog__pic" href="#" @click.prevent="gotoPage('product', {id: product.id})">
       <img :src="product.image" srcset="img/radio@2x.jpg 2x" :alt="product.title">
     </a>
 
@@ -12,7 +12,7 @@
     </h3>
 
     <span class="catalog__price">
-      {{ product.price }} ₽
+      {{ product.price | numberFormat }} ₽
     </span>
 
     <ul class="colors colors--black">
@@ -29,7 +29,9 @@
 </template>
 
 <script>
-import colors from '../data/colors';
+import colors from '@/data/colors';
+import gotoPage from '@/helpers/gotoPage';
+import numberFormat from '@/helpers/numberFormat';
 
 export default {
   name: 'ProductItem',
@@ -39,6 +41,12 @@ export default {
     getColor(id) {
       return colors[id - 1].color;
     },
+
+    gotoPage,
+  },
+
+  filters: {
+    numberFormat,
   },
 };
 </script>
