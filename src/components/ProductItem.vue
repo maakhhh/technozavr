@@ -16,24 +16,10 @@
     </span>
 
     <ul class="colors colors--black">
-      <li class="colors__item">
+      <li class="colors__item" v-for="colorId in product.colorId" :key="String(product.id) + String(colorId)">
         <label class="colors__label">
-          <input class="colors__radio sr-only" type="radio" name="color-1" value="#73B6EA" checked="">
-          <span class="colors__value" style="background-color: #73B6EA;">
-          </span>
-        </label>
-      </li>
-      <li class="colors__item">
-        <label class="colors__label">
-          <input class="colors__radio sr-only" type="radio" name="color-1" value="#8BE000">
-          <span class="colors__value" style="background-color: #8BE000;">
-          </span>
-        </label>
-      </li>
-      <li class="colors__item">
-        <label class="colors__label">
-          <input class="colors__radio sr-only" type="radio" name="color-1" value="#222">
-          <span class="colors__value" style="background-color: #222;">
+          <input class="colors__radio sr-only" type="radio" name="color-1" :value="colorId" checked="">
+          <span class="colors__value" :style="{backgroundColor: getColor(colorId)}">
           </span>
         </label>
       </li>
@@ -43,8 +29,16 @@
 </template>
 
 <script>
+import colors from '../data/colors';
+
 export default {
   name: 'ProductItem',
   props: ['product'],
+
+  methods: {
+    getColor(id) {
+      return colors[id - 1].color;
+    },
+  },
 };
 </script>
