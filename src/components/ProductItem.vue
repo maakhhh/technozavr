@@ -1,14 +1,14 @@
 <template>
 <!-- eslint-disable max-len -->
   <li class="catalog__item">
-    <a class="catalog__pic" href="#" @click.prevent="gotoPage('product', {id: product.id})">
+    <router-link class="catalog__pic" :to="{name: 'product', params: {id: product.id}}">
       <img :src="product.image" srcset="img/radio@2x.jpg 2x" :alt="product.title">
-    </a>
+    </router-link>
 
     <h3 class="catalog__title">
-      <a href="#">
+      <router-link :to="{name: 'product', params: {id: product.id}}">
         {{ product.title }}
-      </a>
+      </router-link>
     </h3>
 
     <span class="catalog__price">
@@ -17,7 +17,7 @@
 
     <ul class="colors colors--black">
       <li class="colors__item" v-for="colorId in product.colorId" :key="String(product.id) + String(colorId)">
-        <label class="colors__label">
+        <label class="colors__label" required>
           <input class="colors__radio sr-only" type="radio" name="color-1" :value="colorId" checked="">
           <span class="colors__value" :style="{backgroundColor: getColor(colorId)}">
           </span>
@@ -30,7 +30,6 @@
 
 <script>
 import colors from '@/data/colors';
-import gotoPage from '@/helpers/gotoPage';
 import numberFormat from '@/helpers/numberFormat';
 
 export default {
@@ -41,8 +40,6 @@ export default {
     getColor(id) {
       return colors[id - 1].color;
     },
-
-    gotoPage,
   },
 
   filters: {

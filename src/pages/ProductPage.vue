@@ -4,14 +4,14 @@
     <div class="content__top">
       <ul class="breadcrumbs">
         <li class="breadcrumbs__item">
-          <a class="breadcrumbs__link" href="index.html" @click.prevent="gotoPage('main')">
+          <router-link class="breadcrumbs__link" :to="{name: 'main'}">
             Каталог
-          </a>
+          </router-link>
         </li>
         <li class="breadcrumbs__item">
-          <a class="breadcrumbs__link" href="#" @click.prevent="gotoPage('main')">
+          <router-link class="breadcrumbs__link" :to="{name: 'main'}">
             {{ category.title }}
-          </a>
+          </router-link>
         </li>
         <li class="breadcrumbs__item">
           <a class="breadcrumbs__link">
@@ -56,7 +56,7 @@
           {{ product.title }}
         </h2>
         <div class="item__form">
-          <form class="form" action="#" method="POST">
+          <form class="form" @submit.prevent="addProductToCart()">
             <b class="item__price">
               {{ product.price | numberFormat }} ₽
             </b>
@@ -66,39 +66,8 @@
               <ul class="colors">
                 <li class="colors__item" v-for="color in productColors" :key="String(product.id) + String(color.id)">
                   <label class="colors__label">
-                    <input class="colors__radio sr-only" type="radio" name="color-item" :value="color.id" checked="">
+                    <input class="colors__radio sr-only" type="radio" name="color-item" :value="color.id" v-model.number="colorId">
                     <span class="colors__value" :style="{backgroundColor: color.color}">
-                    </span>
-                  </label>
-                </li>
-              </ul>
-            </fieldset>
-
-            <fieldset class="form__block">
-              <legend class="form__legend">Объемб в ГБ:</legend>
-
-              <ul class="sizes sizes--primery">
-                <li class="sizes__item">
-                  <label class="sizes__label">
-                    <input class="sizes__radio sr-only" type="radio" name="sizes-item" value="32">
-                    <span class="sizes__value">
-                      32gb
-                    </span>
-                  </label>
-                </li>
-                <li class="sizes__item">
-                  <label class="sizes__label">
-                    <input class="sizes__radio sr-only" type="radio" name="sizes-item" value="64">
-                    <span class="sizes__value">
-                      64gb
-                    </span>
-                  </label>
-                </li>
-                <li class="sizes__item">
-                  <label class="sizes__label">
-                    <input class="sizes__radio sr-only" type="radio" name="sizes-item" value="128" checked="">
-                    <span class="sizes__value">
-                      128gb
                     </span>
                   </label>
                 </li>
@@ -107,15 +76,15 @@
 
             <div class="item__row">
               <div class="form__counter">
-                <button type="button" aria-label="Убрать один товар">
+                <button type="button" aria-label="Убрать один товар" @click.prevent="deleteAmount()">
                   <svg width="12" height="12" fill="currentColor">
                     <use xlink:href="#icon-minus"></use>
                   </svg>
                 </button>
 
-                <input type="text" value="1" name="count">
+                <input type="text" v-model.number="productAmount">
 
-                <button type="button" aria-label="Добавить один товар">
+                <button type="button" aria-label="Добавить один товар" @click.prevent="productAmount++">
                   <svg width="12" height="12" fill="currentColor">
                     <use xlink:href="#icon-plus"></use>
                   </svg>
@@ -186,18 +155,22 @@
 
 <script>
 import products from '@/data/products';
-import gotoPage from '@/helpers/gotoPage';
 import categories from '@/data/categories';
 import colors from '@/data/colors';
 import numberFormat from '@/helpers/numberFormat';
 
 export default {
   name: 'productPage',
-  props: ['params'],
+  data() {
+    return {
+      productAmount: 1,
+      colorId: 0,
+    };
+  },
 
   computed: {
     product() {
-      return products.find((product) => product.id === this.params.id);
+      return products.find((product) => product.id === +this.$route.params.id);
     },
     category() {
       return categories.find((category) => category.id === this.product.categoryId);
@@ -207,12 +180,25 @@ export default {
     },
   },
 
-  methods: {
-    gotoPage,
-  },
-
   filters: {
     numberFormat,
+  },
+
+  methods: {
+    addProductToCart() {
+      if (this.colorId !== 0) {
+        this.$store.commit(
+          'addProductToCart',
+          { productId: this.product.id, amount: this.productAmount, colorId: this.colorId },
+        );
+      }
+    },
+
+    deleteAmount() {
+      if (this.productAmount > 0) {
+        this.productAmount -= 1;
+      }
+    },
   },
 };
 </script>
