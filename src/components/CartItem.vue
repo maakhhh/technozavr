@@ -7,13 +7,13 @@
   <h3 class="product__title">
     {{ item.product.title }}
   </h3>
-  <p class="product__info product__info--color">
+  <!-- <p class="product__info product__info--color">
     Цвет:
     <span>
-      <i :style="{backgroundColor: color.color}"></i>
+      <i :style="{backgroundColor: color.code}"></i>
       {{ color.title }}
     </span>
-  </p>
+  </p> -->
   <span class="product__code">
     Артикул: {{ item.product.id }}
   </span>
@@ -35,7 +35,7 @@
   </div>
 
   <b class="product__price">
-    {{ item.product.price | numberFormat }} ₽
+    {{ item.product.price * item.amount | numberFormat }} ₽
   </b>
 
   <button class="product__del button-del" type="button" aria-label="Удалить товар из корзины" @click.prevent="deleteCart(item.productId)">
@@ -50,7 +50,7 @@
 <script>
 import numberFormat from '@/helpers/numberFormat';
 import colors from '@/data/colors';
-import { mapMutations } from 'vuex';
+import { mapActions } from 'vuex';
 
 export default {
   props: ['item'],
@@ -60,7 +60,7 @@ export default {
   },
 
   methods: {
-    ...mapMutations({ deleteCart: 'deleteProductCart' }),
+    ...mapActions({ updateCartAmount: 'updateCartProductAmount', deleteCart: 'deleteCartProduct' }),
 
     updateAmount() {
       if (this.amount > 0) {
@@ -80,10 +80,7 @@ export default {
       },
 
       set(value) {
-        if (value === 0) {
-          this.deleteCart(this.item.productId);
-        }
-        this.$store.commit('updateProductCartAmount', { productId: this.item.productId, amount: value });
+        this.updateCartAmount({ productId: this.item.productId, amount: value });
       },
     },
   },

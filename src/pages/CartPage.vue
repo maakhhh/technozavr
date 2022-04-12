@@ -23,7 +23,9 @@
       </span>
     </div>
 
-    <section class="cart">
+    <BaseLoader class="aligner" v-if="$store.state.productsLoading" />
+
+    <section class="cart" v-else>
       <form class="cart__form form" action="#" method="POST">
         <div class="cart__field">
           <ul class="cart__list">
@@ -53,6 +55,7 @@
 import { mapGetters } from 'vuex';
 import numberFormat from '@/helpers/numberFormat';
 import CartItem from '@/components/CartItem.vue';
+import BaseLoader from '@/components/BaseLoader.vue';
 
 export default {
   computed: {
@@ -81,6 +84,7 @@ export default {
 
   components: {
     CartItem,
+    BaseLoader,
   },
 
   filters: {

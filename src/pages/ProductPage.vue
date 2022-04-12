@@ -1,6 +1,8 @@
 <template>
 <!-- eslint-disable max-len -->
-  <main class="content container">
+  <BaseLoader class="aligner" v-if="productLoading"/>
+  <ErrorNotify class="aligner" v-else-if="!productData" :message="productLoadingError"/>
+  <main class="content container" v-else>
     <div class="content__top">
       <ul class="breadcrumbs">
         <li class="breadcrumbs__item">
@@ -24,7 +26,7 @@
     <section class="item">
       <div class="item__pics pics">
         <div class="pics__wrapper">
-          <img width="570" height="570" :src="product.image" srcset="img/phone-square@2x.jpg 2x" alt="Название товара">
+          <img width="570" height="570" :src="product.image" alt="Название товара">
         </div>
         <!-- <ul class="pics__list">
           <li class="pics__item">
@@ -56,7 +58,7 @@
           {{ product.title }}
         </h2>
         <div class="item__form">
-          <form class="form" @submit.prevent="addProductToCart()">
+          <form class="form" @submit.prevent="addProduct({ productId: product.id, amount: productAmount }); cartAdded = true;">
             <b class="item__price">
               {{ product.price | numberFormat }} ₽
             </b>
@@ -66,8 +68,8 @@
               <ul class="colors">
                 <li class="colors__item" v-for="color in productColors" :key="String(product.id) + String(color.id)">
                   <label class="colors__label">
-                    <input class="colors__radio sr-only" type="radio" name="color-item" :value="color.id" v-model.number="colorId">
-                    <span class="colors__value" :style="{backgroundColor: color.color}">
+                    <input class="colors__radio sr-only" type="radio" name="color-item" :value="color.id">
+                    <span class="colors__value" :style="{backgroundColor: color.code}">
                     </span>
                   </label>
                 </li>
@@ -90,8 +92,9 @@
                   </svg>
                 </button>
               </div>
-
-              <button class="button button--primery" type="submit">
+              <div class="added" v-if="cartAdded">Товар добавлен в корзину</div>
+              <BaseLoader class="added-loader" v-if="$store.state.addedLoading" />
+              <button v-else class="button button--primery" type="submit" :disabled="$store.state.cartAdded">
                 В корзину
               </button>
             </div>
@@ -154,29 +157,36 @@
 </template>
 
 <script>
-import products from '@/data/products';
-import categories from '@/data/categories';
-import colors from '@/data/colors';
 import numberFormat from '@/helpers/numberFormat';
+import axios from 'axios';
+import API_BASE_URL from '@/config';
+import BaseLoader from '@/components/BaseLoader.vue';
+import ErrorNotify from '@/components/ErrorNotify.vue';
+import { mapActions } from 'vuex';
 
 export default {
   name: 'productPage',
+  components: { BaseLoader, ErrorNotify },
   data() {
     return {
       productAmount: 1,
-      colorId: 0,
+
+      productData: null,
+      productLoading: false,
+      productLoadingError: '',
+      cartAdded: false,
     };
   },
 
   computed: {
     product() {
-      return products.find((product) => product.id === +this.$route.params.id);
+      return this.productData;
     },
     category() {
-      return categories.find((category) => category.id === this.product.categoryId);
+      return this.product.category;
     },
     productColors() {
-      return colors.filter((color) => this.product.colorId.includes(color.id));
+      return this.product.colors;
     },
   },
 
@@ -185,20 +195,65 @@ export default {
   },
 
   methods: {
-    addProductToCart() {
-      if (this.colorId !== 0) {
-        this.$store.commit(
-          'addProductToCart',
-          { productId: this.product.id, amount: this.productAmount, colorId: this.colorId },
-        );
-      }
-    },
+    ...mapActions({ addProduct: 'addToCard' }),
 
     deleteAmount() {
       if (this.productAmount > 0) {
         this.productAmount -= 1;
       }
     },
+
+    loadProduct() {
+      this.productLoading = true;
+      this.productLoadingError = false;
+      return axios
+        .get(`${API_BASE_URL}api/products/${this.$route.params.id}`)
+        .then((response) => {
+          this.productData = ({
+            ...response.data,
+            image: response.data.image.file.url,
+          });
+        })
+        .catch((error) => { this.productLoadingError = error.response.data.error.message; })
+        .then(() => { this.productLoading = false; });
+    },
+  },
+
+  watch: {
+    '$route.params.id': {
+      handler() {
+        this.loadProduct();
+      },
+
+      immediate: true,
+    },
   },
 };
 </script>
+
+<style scoped>
+  .aligner {
+    margin-top: 500px;
+    margin-bottom: 500px;
+  }
+
+  .added-loader {
+    border: 6px solid #f3f3f3;
+    border-top: 6px solid #9eff00;
+
+    margin: auto;
+    width: 40px;
+    height: 40px;
+  }
+
+  .item__row {
+    position: relative;
+  }
+
+  .added {
+    position: absolute;
+    top: -22px;
+    left: 176px;
+  }
+
+</style>
