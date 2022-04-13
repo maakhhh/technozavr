@@ -41,9 +41,9 @@
             Итого: <span>{{ price | numberFormat }} ₽</span>
           </p>
 
-          <button class="cart__button button button--primery" type="submit">
+          <router-link v-if="products.length !== 0" :to="{name: 'order'}" tag="button" class="cart__button button button--primery" type="submit">
             Оформить заказ
-          </button>
+          </router-link>
         </div>
       </form>
     </section>
@@ -72,6 +72,9 @@ export default {
 
       const lastone = count.split('').pop();
 
+      if (+lastone === 0) {
+        return `${count} товаров`;
+      }
       if (+lastone === 1) {
         return `${count} товар`;
       }

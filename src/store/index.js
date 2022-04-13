@@ -12,9 +12,19 @@ export default new Vuex.Store({
     userAccessKey: null,
     cartProductsData: [],
     productsLoading: false,
-    addedLoading: false,
+
+    orderInfo: null,
   },
   mutations: {
+    updateOrderInfo(state, orderInfo) {
+      state.orderInfo = orderInfo;
+    },
+
+    resetCart(state) {
+      state.cartProducts = [];
+      state.cartProductsData = [];
+    },
+
     updateProductCartAmount(state, params) {
       const item = state.cartProducts.find((product) => product.productId === params.productId);
 
@@ -45,10 +55,6 @@ export default new Vuex.Store({
     updateLoading(state, load) {
       state.productsLoading = load;
     },
-
-    updateAddedLoading(state, load) {
-      state.addedLoading = load;
-    },
   },
 
   getters: {
@@ -68,6 +74,16 @@ export default new Vuex.Store({
   },
 
   actions: {
+    loadOrderInfo(context, orderId) {
+      return axios
+        .get(`${API_BASE_URL}api/orders/${orderId}`, {
+          params: {
+            userAccessKey: context.state.userAccessKey,
+          },
+        })
+        .then((response) => context.commit('updateOrderInfo', response.data));
+    },
+
     loadCart(context) {
       context.commit('updateLoading', true);
       return axios
@@ -88,7 +104,6 @@ export default new Vuex.Store({
     },
 
     addToCard(context, { productId, amount }) {
-      context.commit('updateAddedLoading', true);
       return axios
         .post(`${API_BASE_URL}api/baskets/products`, {
           productId,
@@ -107,8 +122,7 @@ export default new Vuex.Store({
           }
           context.commit('updateCartProductsData', response.data.items);
           context.commit('syncCartProducts');
-        })
-        .then(() => context.commit('updateAddedLoading', false));
+        });
     },
 
     updateCartProductAmount(context, { productId, amount }) {
